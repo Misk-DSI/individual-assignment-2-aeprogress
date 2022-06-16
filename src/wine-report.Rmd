@@ -15,12 +15,16 @@ knit: (function(input, ...) {
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+
 library(tidyverse)
 library(skimr)
 library(janitor)
 library(here)
 library(plotly)
+library(GGally)
+library(corrplot)
 library(kableExtra)
+library(viridis)
 
 ```
 ## Introduction
@@ -100,3 +104,47 @@ ggplot(aes(goodQuality, fill = goodQuality)) +
 From the binary red wine quality plot we observe that the number of bad quality wine is close to good once. This observation 
 
 ___
+
+Next, let's look at the correlations between the different attributes.
+
+```{r, echo=FALSE}
+
+# Plot a heat-map to show the correlations between attributes.
+nc=ncol(wine)
+winedf <- wine[,1:12]
+# winedf$quality <- as.integer(wine[,12])
+correlations <- cor(winedf,method="pearson")
+corrplot(correlations, number.cex = .9, method = "square", 
+         hclust.method = "ward", order = "FPC",
+         type = "full", tl.cex=0.8,tl.col = "black")
+
+```
+
+From this heat-map one can observe that the attributes that have the highest correlations with wine quality are alcohol, volatile acidity and sulphates. So let's have a closer look at them.
+
+___
+
+Let's take a look at the relationship between alcohol, sulphates and quality.
+
+```{r, echo=FALSE}
+
+wine %>%
+  plot_ly(x = ~alcohol,  y = ~sulphates, color = ~quality, hoverinfo = 'text', colors = viridis(3),
+ text = ~paste('Quality:', quality,
+                        '<br>Alcohol:', alcohol,
+                        '<br>sulphates:', sulphates)) %>%
+  add_markers(opacity = 0.8) %>%
+  layout(title = "3D Wine Quality",
+         annotations=list(yref='paper',
+                          xref="paper",
+                          y=1.05,x=1.1, 
+                          text="quality",
+                          showarrow=F),
+         scene = list(xaxis = list(title = 'Alcohol'),
+                      yaxis = list(title = 'sulphates')))
+
+```
+
+
+## Conclusion
+In conclusion, a good quality red wine has a strong correlations with alcohol, volatile acidity and sulphates. In order to have a good quality red wine volatile acidity and sulphates need to be at minimum unlike alcohol which need to be in a higher range.

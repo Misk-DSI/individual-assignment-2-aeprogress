@@ -5,6 +5,8 @@ library(here)
 library(plotly)
 library(GGally)
 library(kableExtra)
+library(corrplot)
+library(viridis)
 
 # Import winequlity-red dataset.
 wine <- read_csv(here("data", "winequality-red.csv"))
@@ -56,6 +58,7 @@ ggplot(wine, aes(fixed_acidity, quality, fill = quality)) +
 ggplot(wine, aes(alcohol, quality,  fill = quality)) +
   geom_jitter() 
 
+# Plot relationship between each attribute with every other attribute.
 wine %>% 
   mutate(quality = as.factor(quality)) %>% 
   ggpairs(aes(color = quality, alpha=0.4),
@@ -64,6 +67,26 @@ wine %>%
           upper=list(continuous="blank"),
           axisLabels="none", switch="both")
 
+# Plot a heat-map to show the relationships between attributes.
+nc=ncol(wine)
+winedf <- wine[,1:12]
+winedf$quality <- as.integer(wine[,12])
+correlations <- cor(winedf,method="pearson")
+corrplot(correlations, number.cex = .9, method = "square", 
+         hclust.method = "ward", order = "FPC",
+         type = "full", tl.cex=0.8,tl.col = "black")
 
-here("data", "winequality-red.csv")
-rm(binaryQuality) # Function to delete environment variables.
+wine %>% 
+  plot_ly(x=~alcohol, y=~volatile_acidity, z= ~sulphates, color=~quality, hoverinfo = 'text', colors = viridis(3),
+          text = ~paste('Quality:', quality,
+                        '<br>Alcohol:', alcohol,
+                        '<br>Volatile Acidity:', volatile_acidity,
+                        '<br>sulphates:', sulphates)) %>% 
+  add_markers(opacity = 0.8) %>%
+  layout(title = "3D Wine Quality",
+         annotations=list(yref='paper',xref="paper",y=1.05,x=1.1, text="quality",showarrow=F),
+         scene = list(xaxis = list(title = 'Alcohol'),
+                      yaxis = list(title = 'Volatile Acidity'),
+                      zaxis = list(title = 'sulphates')))
+
+# rm() # Function to delete environment variables.
