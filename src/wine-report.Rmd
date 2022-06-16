@@ -1,0 +1,102 @@
+---
+title: "Wine Report"
+author: "Abdulrahman Aleid"
+date: '2022-06-15'
+output: html_document
+
+knit: (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "../"
+    )
+  })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(skimr)
+library(janitor)
+library(here)
+library(plotly)
+library(kableExtra)
+
+```
+## Introduction
+This report investigates the "Red Wine Quality" dataset which is  related to red variants of the Portuguese "Vinho Verde" wine...
+
+## Dataset Exploration
+Let's have a look at a summery of the dataset.
+
+```{r, echo=FALSE}
+
+# Import Red Wine Quality dataset.
+wine <- read_csv(here("data", "winequality-red.csv"), show_col_types = FALSE)
+
+# View data summary.
+glimpse(wine)
+skim(wine)
+
+```
+\
+In the summary above we see a sample of each of the attributes of the dataset. We, also, see the distribution of each attribute represented by the standard deviation (sd), minimum (p0), lower [25th percentile] (p1), median [50th percentile] (p2), upper [75th percentile] (p3), and maximum [100th percentile] (p5) of each attribute.
+
+___
+
+The following table shows random 10 rows sample of the dataset.
+
+```{r, echo=FALSE}
+
+# Display random 10 rows of the dataset.
+set.seed(1234)
+kable(head(wine,10), "html") %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+```
+___
+
+To further investigate the different variables, let's have a look at graph representations of them.
+
+Starting by a distribution graph of the red wine quality rantings.
+
+
+\
+```{r, echo=FALSE}
+invisible(dev.off())
+
+suppressWarnings(min(wine))
+
+# Plot a bar graph of the quality attribute.
+plot_ly(data = wine, 
+        x = ~quality,
+        type = "histogram", 
+        color = ~quality) %>%
+  layout(xaxis = list(range=c(min(wine$quality),max(wine$quality))), 
+         title = 'Distribution of Red Wine Quality Ratings')
+
+```
+
+The above graph suggests that the red wine quality ratings is symmetrically distributed.
+
+If we consider the wine quality rating less than the median (`r median(wine$quality)` ranting) are poor wine, then lets see how many poor wine versus good wine we have in the dataset.
+
+```{r, echo=FALSE}
+
+# Plot number of good wine vs bad wine.
+wine %>% 
+  select(quality) %>% 
+  mutate(goodQuality = quality >= 6) %>% 
+ggplot(aes(goodQuality, fill = goodQuality)) +
+  geom_bar() +
+  geom_text(position = "stack", stat='count', aes(label=..count..), vjust = -0.5) +
+  theme(plot.title=element_text(hjust=0.5)) +
+  labs(x="Wine Quality",
+       y="Observations",
+       title = "Red Wine Quality: Good V.S. Bad")
+
+```
+
+From the binary red wine quality plot we observe that the number of bad quality wine is close to good once. This observation 
+
+___
