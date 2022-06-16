@@ -30,29 +30,34 @@ plot_ly(data = wine,
   layout(xaxis = list(range=c(min(wine$quality),max(wine$quality))), 
          title = 'Distribution of Red Wine Quality Ratings')
 
-# Plot a bar graph of the quality attribute.
-# ggplot(wine, aes(quality, fill = quality)) +
-#   geom_bar(fill = seq(1, 6, 1)) + 
-#   geom_text(position = "stack", stat='count', aes(label=..count..), vjust = -0.5) + 
-#   theme(plot.title=element_text(hjust=0.5)) + 
-#   labs(x="Wine Quality", 
-#        y="Observations",
-#        title = "Red Wine Quality Ratings Distribution")
+# Plot number of good wine vs bad wine.
+wine %>% 
+  select(quality) %>% 
+  mutate(goodQuality = quality >= 6) %>% 
+  ggplot(aes(goodQuality, fill = goodQuality)) + 
+  geom_text(position = "stack", stat='count',aes(label=..count..), vjust = -0.5) +
+  geom_bar(stat="count")
+
+# Plot the distribution of all variables.
+wine %>%
+  keep(is.numeric) %>% 
+  gather() %>% 
+  ggplot(aes(value,fill=key)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_histogram(bins=sqrt(nrow(wine))) +
+  theme(legend.position="none") 
 
 
+# Plot fixed_acidity V.S. quality.
+ggplot(wine, aes(fixed_acidity, quality, fill = quality)) +
+  geom_jitter()
 
-# Plot fixed_acidity with respect to quality.
-ggplot(wine, aes(fixed_acidity, fill = quality, color = seq(1, 1599, 1))) +
-  geom_density(alpha=0.5)
+# Plot alcohol V.S. quality. 
+ggplot(wine, aes(alcohol, quality,  fill = quality)) +
+  geom_jitter() 
 
-
-
-
-# Since residual_sugar, free_sulfur_dioxide, total_sulfur_dioxide and chlorides 
-# do not change significantly across different qualities they will not be included.  
 wine %>% 
   mutate(quality = as.factor(quality)) %>% 
-  select(-c(residual_sugar, free_sulfur_dioxide, total_sulfur_dioxide, chlorides)) %>%
   ggpairs(aes(color = quality, alpha=0.4),
           columns=1:7,
           lower=list(continuous="points"),
@@ -61,4 +66,4 @@ wine %>%
 
 
 here("data", "winequality-red.csv")
-# rm() # Function to delete environment variables.
+rm(binaryQuality) # Function to delete environment variables.
