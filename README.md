@@ -9,3 +9,7 @@ The report content:
 - Concolusion
 
 The report was mainly developed using R programming language.
+
+Visit the main repository [here](https://github.com/Misk-DSI/individual-assignment-2-aeprogress)
+
+View the EDA report [here](./wine-report.html)
